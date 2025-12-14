@@ -18,7 +18,7 @@ db:
 #    psqladdr: "47.92.253.145"
     psqladdr: "127.0.0.1"
     psqlport: 5432 # 默认5432
-    psqldb: ThingsPanel
+    psqldb: ThingsPanel_github
     psqluser: postgres
     psqlpass: postgresThingsPanel
 
