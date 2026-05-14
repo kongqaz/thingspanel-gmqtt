@@ -1,18 +1,17 @@
-# syntax=docker/dockerfile:1
-FROM golang:alpine AS builder
-WORKDIR $GOPATH/src/app
-ADD . ./
-ENV GO111MODULE on
-ENV GOPROXY="https://goproxy.io"
-WORKDIR $GOPATH/src/app/cmd/gmqttd
-RUN go build
-
 FROM alpine:3.12
+
 WORKDIR /gmqttd
-# RUN apk update && apk add --no-cache tzdata
-COPY --from=builder /go/src/app/cmd/gmqttd .
+
+COPY gmqttd-linux /gmqttd/gmqttd
+COPY cmd/gmqttd/default_config.yml /gmqttd/default_config.yml
+COPY cmd/gmqttd/thingspanel.yml /gmqttd/thingspanel.yml
+COPY cmd/gmqttd/certs /gmqttd/certs
+
+ENV GMQTT_CONFIG_PATH=/gmqttd/default_config.yml \
+    TZ=Asia/Shanghai
+
 EXPOSE 1883 8883 8082 8083 8084
-RUN chmod +x gmqttd
-RUN pwd
-RUN ls -lrt
-ENTRYPOINT ["./gmqttd", "start", "-c", "/gmqttd/default_config.yml"]
+
+RUN chmod +x /gmqttd/gmqttd
+
+ENTRYPOINT ["/bin/sh", "-c", "./gmqttd start -c $GMQTT_CONFIG_PATH"]

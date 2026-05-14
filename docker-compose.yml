@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  gmqtt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: thingspanel-gmqtt
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+      - "8082:8082"
+      - "8083:8083"
+      - "8084:8084"
+    environment:
+      - GMQTT_CONFIG_PATH=/gmqttd/default_config.yml
+      - GMQTT_DB_REDIS_CONN=redis:6379
+      - GMQTT_DB_REDIS_DB_NUM=1
+      - GMQTT_DB_REDIS_PASSWORD=redis
+      - GMQTT_DB_PSQL_PSQLADDR=postgres
+      - GMQTT_DB_PSQL_PSQLPORT=5432
+      - GMQTT_DB_PSQL_PSQLDB=thingspanel
+      - GMQTT_DB_PSQL_PSQLUSER=postgres
+      - GMQTT_DB_PSQL_PSQLPASS=postgres
+    depends_on:
+      - postgres
+    volumes:
+      - ./cmd/gmqttd/default_config.yml:/gmqttd/default_config.yml:ro
+      - ./cmd/gmqttd/thingspanel.yml:/gmqttd/thingspanel.yml:ro
+      - ./cmd/gmqttd/certs:/gmqttd/certs:ro
+    restart: unless-stopped
+
+  postgres:
+    image: timescale/timescaledb:2.13.0-pg15
+    container_name: thingspanel-gmqtt-postgres
+    environment:
+      - POSTGRES_DB=thingspanel
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Optional Redis service for persistence (start with --profile redis)
+  redis:
+    image: redis:alpine
+    container_name: thingspanel-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    profiles:
+      - redis
+
+volumes:
+  redis_data:
+  postgres_data:
