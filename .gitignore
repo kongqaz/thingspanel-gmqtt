@@ -1,2 +1,6 @@
 /.idea
 /vendor
+# ==== 本地运行数据/构建产物/工具缓存，不提交（merge_sync 添加）====
+*.exe
+gmqttd-linux
+thingspanel.yml
